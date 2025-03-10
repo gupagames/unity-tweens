@@ -1,6 +1,9 @@
 using UnityEngine;
 using Tweens.Core;
 using System.Collections;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace Tweens {
   public abstract class TweenInstance {
@@ -160,6 +163,31 @@ namespace Tweens {
     public IEnumerator AwaitDecommission() {
       while (!isDecommissioned) {
         yield return null;
+      }
+    }
+
+    public async Task AsAsync(CancellationToken cancellationToken)
+    {
+      try
+      {
+          while (!isDecommissioned)
+          {
+              cancellationToken.ThrowIfCancellationRequested();
+              await Task.Yield();
+
+          }
+      }
+      catch (OperationCanceledException)
+      {
+          Cancel();
+      }
+    }
+
+    public async Task AsAsync()
+    {
+      while (!isDecommissioned)
+      { 
+          await Task.Yield();
       }
     }
 
